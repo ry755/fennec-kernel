@@ -1,6 +1,6 @@
 ; virtual memory management subroutines
 ; FIXME: at the moment, this only supports managing pages in the current page table
-;        in the future, this should support asking pmm for new page tables if the current one is full
+;        in the future, this should ask pmm to allocate blocks for new page tables if the current one is full
 
 section .text
 
@@ -43,6 +43,45 @@ vmm_find_empty_page_entry:
     pop ecx
     ret
 
+; map the specified physical address to the specified virtual address
+; this does *NOT* automatically mark physical blocks as used!
+; inputs:
+; ESI: 4KB-aligned physical address
+; EDI: 4KB-aligned virtual address
+; outputs:
+; none
+vmm_map_physical_to_virtual:
+    push eax
+    push ecx
+    push ebx
+    push esi
+    push edi
+
+    and esi, 0xFFFFF000      ; ensure physical address is aligned to 4KB block
+    and edi, 0xFFFFF000      ; ensure virtual address is aligned to 4KB block
+
+    mov ebx, esi
+    mov esi, edi
+    call vmm_calculate_virtual_indexes
+    mov esi, ebx
+
+    ; write the entry
+    ; TODO: this will need to be changed if the kernel ever stops
+    ;       living in an identity-mapped location
+    ;       (specifically paging_write_*initial*_table_entry)
+    mov edi, ecx
+    mov ax, 0b00000011       ; read/write, present
+    mov ebx, esi
+    mov esi, paging_kernel_table
+    call paging_write_initial_table_entry
+
+    pop edi
+    pop esi
+    pop ebx
+    pop ecx
+    pop eax
+    ret
+
 ; map the specified physical address to the first free virtual address
 ; this does *NOT* automatically mark physical blocks as used!
 ; inputs:
@@ -52,31 +91,22 @@ vmm_find_empty_page_entry:
 vmm_map_physical_to_first_free_virtual:
     push eax
     push ecx
-    push ebx
     push esi
 
-    and esi, 0xFFFFF000      ; ensure address is aligned to 4KB block
-
-    ; first, find an empty entry in the page table
+    ; find an empty entry in the page table
     call vmm_find_empty_page_entry
 
-    ; then write to that entry
-    ; TODO: this will need to be changed if the kernel ever stops
-    ;       living in an identity-mapped location
-    ;       (specifically paging_write_*initial*_table_entry)
-    mov edi, eax
-    mov ax, 0b00000011       ; read/write, present
-    mov ebx, esi
-    mov esi, paging_kernel_table
-    call paging_write_initial_table_entry
+    ; convert to virtual address
+    mov ecx, eax
+    mov eax, 0               ; TODO: replace this with the real PD index, once PDs are dynamically created
+    call vmm_calculate_virtual_address
+
+    ; map it!
+    call vmm_map_physical_to_virtual
 
     ; finally, return the newly mapped virtual address
-    mov eax, 0               ; TODO: replace this with the real PD index, once PDs are dynamically created
-    mov ecx, edi
-    call vmm_calulate_virtual_address
 
     pop esi
-    pop ebx
     pop ecx
     pop eax
     ret
@@ -88,7 +118,7 @@ vmm_map_physical_to_first_free_virtual:
 ; ECX: page table index
 ; outputs:
 ; EDI: 4KB-aligned virtual address
-vmm_calulate_virtual_address:
+vmm_calculate_virtual_address:
     push eax
     push ecx
 
@@ -111,7 +141,7 @@ vmm_calulate_virtual_address:
 ; outputs:
 ; EAX: page directory index
 ; ECX: page table index
-vmm_calulate_virtual_indexes:
+vmm_calculate_virtual_indexes:
     push esi
 
     mov eax, esi             ; calculate page directory index
