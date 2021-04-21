@@ -62,7 +62,7 @@ vmm_map_physical_to_virtual:
 
     mov ebx, esi
     mov esi, edi
-    call vmm_calculate_virtual_indexes
+    call vmm_calculate_virtual_indexes_from_address
     mov esi, ebx
 
     ; write the entry
@@ -99,7 +99,7 @@ vmm_map_physical_to_first_free_virtual:
     ; convert to virtual address
     mov ecx, eax
     mov eax, 0               ; TODO: replace this with the real PD index, once PDs are dynamically created
-    call vmm_calculate_virtual_address
+    call vmm_calculate_virtual_address_from_indexes
 
     ; map it!
     call vmm_map_physical_to_virtual
@@ -118,7 +118,7 @@ vmm_map_physical_to_first_free_virtual:
 ; ECX: page table index
 ; outputs:
 ; EDI: 4KB-aligned virtual address
-vmm_calculate_virtual_address:
+vmm_calculate_virtual_address_from_indexes:
     push eax
     push ecx
 
@@ -141,7 +141,7 @@ vmm_calculate_virtual_address:
 ; outputs:
 ; EAX: page directory index
 ; ECX: page table index
-vmm_calculate_virtual_indexes:
+vmm_calculate_virtual_indexes_from_address:
     push esi
 
     mov eax, esi             ; calculate page directory index
