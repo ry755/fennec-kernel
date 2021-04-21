@@ -111,6 +111,32 @@ vmm_map_physical_to_first_free_virtual:
     pop eax
     ret
 
+; unmap the specified virtual address
+; this does *NOT* automatically mark physical blocks as free!
+; inputs:
+; ESI: 4KB-aligned virtual address
+; outputs:
+; none
+vmm_unmap_virtual:
+    pushad
+
+    and esi, 0xFFFFF000      ; ensure virtual address is aligned to 4KB block
+
+    call vmm_calculate_virtual_indexes_from_address
+
+    ; write an empty entry to the page table
+    ; TODO: this will need to be changed if the kernel ever stops
+    ;       living in an identity-mapped location
+    ;       (specifically paging_write_*initial*_table_entry)
+    mov edi, ecx
+    mov ax, 0b00000000
+    mov ebx, 0x00000000
+    mov esi, paging_kernel_table
+    call paging_write_initial_table_entry
+
+    popad
+    ret
+
 ; calculate the virtual address pointed to by the specified page directory and page table indexes
 ; the actual contents of the specified page directory and page table doesn't matter
 ; inputs:
