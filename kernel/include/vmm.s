@@ -103,3 +103,24 @@ vmm_calulate_virtual_address:
     pop ecx
     pop eax
     ret
+
+; calculate the page directory and page table indexes for the specified virtual address
+; https://stackoverflow.com/questions/29945171/difference-between-page-table-and-page-directory
+; inputs:
+; ESI: 4KB-aligned virtual address
+; outputs:
+; EAX: page directory index
+; ECX: page table index
+vmm_calulate_virtual_indexes:
+    push esi
+
+    mov eax, esi             ; calculate page directory index
+    and eax, 0xFFC00000      ; mask out all bits except for 31:22
+    shr eax, 22              ; shift right 22 times
+
+    mov ecx, esi             ; calculate page table index
+    and ecx, 0x003FF000      ; mask out all bits except for 21:12
+    shr ecx, 12              ; shift right 12 times
+
+    pop esi
+    ret
