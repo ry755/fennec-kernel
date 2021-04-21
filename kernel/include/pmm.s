@@ -131,6 +131,28 @@ pmm_mark_block_free:
     pop ebx
     ret
 
+; check if a block is marked as used
+; inputs:
+; ESI: physical address of 4KB block
+; outputs:
+; FLAGS: CF: set if block is used
+pmm_is_block_used:
+    push eax
+    push ecx
+    push edi
+
+    ; get the offsets into the bitmap
+    call pmm_physical_address_to_bitmap
+
+    ; test bit in byte
+    movzx ax, byte [edi]
+    bt ax, cx
+
+    pop edi
+    pop ecx
+    pop ebx
+    ret
+
 ; convert a physical address to byte and bit offsets into the bitmap
 ; inputs:
 ; ESI: physical address of 4KB block
