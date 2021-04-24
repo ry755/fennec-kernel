@@ -8,37 +8,69 @@ section .text
 
 ; find the first empty entry in the page table
 ; inputs:
-; none
+; EAX: number of consecutive pages required
 ; outputs:
-; EAX: page table index of empty entry
-; EDI: pointer to empty page entry in page table, or zero if none found
+; EAX: page table index of first consecutive empty entry
+; EDI: pointer to first consecutive empty page entry in page table, or zero if none found
 vmm_find_empty_page_entry:
     push ecx
     push edx
+    push ebx
     push esi
 
+    dec eax                  ; the first consecutive page is found as part of .find_empty_loop, so decrement
+    mov edi, eax             ; EDI will hold the number of entries required
+
     mov ecx, 4096
-    mov edx, 0
+    mov edx, 0               ; index counter
     mov esi, paging_kernel_table
 .find_entry_loop:
     mov eax, dword [esi]
     bt eax, 0                ; test the Present bit
     jnc .empty_entry_found
     add esi, 4               ; point to next entry
-    inc edx
+    inc edx                  ; increment index counter
     loop .find_entry_loop
 
-    ; if we reach this point, no free entries were found
+    ; if we reach this point, no free entries were found ;w;
     pop esi
+    pop ebx
     pop edx
     pop ecx
     mov eax, 0
     mov edi, 0
     ret
 .empty_entry_found:
-    mov eax, edx
-    mov edi, esi
+    ; now check if there are the required number of consecutive empty entries after this entry
+    push esi                 ; push the current entry pointer
+    push edx                 ; push the current index counter
+    mov ebx, ecx             ; save the loop counter
+    mov ecx, edi             ; swap the loop counter with the number of entries needed
+    cmp ecx, 0               ; if we only need one entry, don't check for a consecutive entry
+    je .all_consecutive_found
+    add esi, 4               ; point to next entry
+    inc edx                  ; increment index counter
+    dec ebx                  ; decrement loop counter used by .find_entry_loop
+.empty_consecutive_entry_loop:
+    mov eax, dword [esi]
+    bt eax, 0                ; test the Present bit
+    jc .not_consecutive      ; this entry is Present, we can't use it consecutively, start over
+    add esi, 4               ; point to next entry
+    inc edx                  ; increment index counter
+    dec ebx                  ; decrement loop counter used by .find_entry_loop
+    loop .empty_consecutive_entry_loop
+    jmp short .all_consecutive_found
+.not_consecutive:
+    mov ecx, ebx             ; restore the loop counter (now decremented)
+    pop eax                  ; pop garbage entry pointer and index counter into EAX
+    pop eax
+    jmp short .find_entry_loop
+.all_consecutive_found:
+    ; if we reach this point, we found enough consecutive empty entries!
+    pop eax                  ; pop the page table index of first consecutive empty entry
+    pop edi                  ; pop the pointer to the first consecutive entry
     pop esi
+    pop ebx
     pop edx
     pop ecx
     ret
@@ -94,6 +126,7 @@ vmm_map_physical_to_first_free_virtual:
     push esi
 
     ; find an empty entry in the page table
+    mov eax, 1               ; we only need one page
     call vmm_find_empty_page_entry
 
     ; convert to virtual address
