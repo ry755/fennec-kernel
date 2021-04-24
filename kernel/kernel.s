@@ -116,78 +116,6 @@ subsystem_init:
     mov dl, 0x00
     call console_print_string
 
-
-
-    ; testing
-
-    mov esi, string_pmm_test_1
-    call console_msg_ok
-    mov esi, 0x01000000
-    call pmm_mark_block_used
-
-    call pmm_find_free_block
-    mov esi, string_pmm_byte_offset
-    mov dl, 0x00
-    call console_msg_boot
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-    mov eax, ecx
-    mov esi, string_pmm_bit_number
-    mov dl, 0x00
-    call console_msg_boot
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-    mov eax, edi
-    mov esi, string_pmm_physical
-    mov dl, 0x00
-    call console_msg_boot
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-
-    mov esi, string_pmm_test_2
-    call console_msg_ok
-    mov esi, 0x01000000
-    call pmm_mark_block_free
-
-    call pmm_find_free_block
-    mov esi, string_pmm_byte_offset
-    mov dl, 0x00
-    call console_msg_boot
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-    mov eax, ecx
-    mov esi, string_pmm_bit_number
-    mov dl, 0x00
-    call console_msg_boot
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-    mov eax, edi
-    mov esi, string_pmm_physical
-    mov dl, 0x00
-    call console_msg_boot
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-
-    ;mov esi, edi
-    ;call pmm_physical_address_to_bitmap
-    ;call console_print_hex_dword
-    ;mov esi, string_crlf
-    ;call console_print_string
-    ;mov eax, ecx
-    ;call console_print_hex_dword
-    ;mov esi, string_crlf
-    ;call console_print_string
-
-    ;jmp hang
-
-
-
     ; initialize paging
     ; set the kernel page directory
     mov esi, paging_kernel_directory
@@ -264,40 +192,6 @@ subsystem_init:
     mov esi, string_init_welcome
     mov dl, 0x00
     call console_msg_ok
-
-    mov ecx, 4
-.virtual_map_test:
-    push ecx
-    ; testing stuff
-    mov esi, string_vmm_test_1
-    mov dl, 0x00
-    call console_msg_boot
-
-    ; find free physical block and mark it as used
-    call pmm_find_free_block
-    mov esi, edi
-    call pmm_mark_block_used
-    mov eax, edi
-    call console_print_hex_dword
-
-    mov esi, string_vmm_test_2
-    mov dl, 0x00
-    call console_print_string
-
-    ; map the physical block to the first free virtual page
-    mov esi, edi
-    call vmm_map_physical_to_first_free_virtual
-    mov eax, edi
-    call console_print_hex_dword
-    mov esi, string_crlf
-    call console_print_string
-
-    pop ecx
-    loop .virtual_map_test
-
-    jmp hang
-
-
 
     mov esi, string_init_sleeping
     mov dl, 0x00
