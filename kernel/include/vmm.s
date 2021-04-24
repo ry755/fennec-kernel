@@ -6,18 +6,36 @@ section .text
 
     [bits 32]
 
-; trampoline routines for C code
+; trampoline routine for C code
 global vmm_cdecl_map_virtual
 vmm_cdecl_map_virtual:
-    pop eax
+    push ebp
+    mov ebp, esp
+
+    push edi
+
+    mov eax, dword [ebp+8]
     call vmm_map_virtual
     mov eax, edi
+
+    pop edi
+    pop ebp
     ret
+
+; trampoline routine for C code
 global vmm_cdecl_unmap_virtual
 vmm_cdecl_unmap_virtual:
-    pop eax
-    pop esi
+    push ebp
+    mov ebp, esp
+
+    push esi
+
+    mov esi, dword [ebp+8]
+    mov eax, dword [ebp+12]
     call vmm_unmap_virtual
+
+    pop esi
+    pop ebp
     ret
 
 ; map the specified number of new consecutive virtual pages to any free physical blocks
