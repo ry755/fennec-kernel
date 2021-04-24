@@ -16,4 +16,5 @@ kernel/include/font/16x16.xcf
 kernel/include/font/unifont.xcf
 kernel/include/font/unifont-thin.xcf
 kernel/include/font/gfx2inc.py
+.vscode/
 ideas.txt
