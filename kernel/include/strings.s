@@ -7,14 +7,14 @@ section .data
 string_prefix:          db "[kernel] ",0
 string_crlf:            db 13,10,0
 string_hex_chars:       db "0123456789ABCDEF",0
-string_AX:              db "AX: 0x",0
-string_BX:              db "BX: 0x",0
-string_CX:              db "CX: 0x",0
-string_DX:              db "DX: 0x",0
-string_SP:              db "SP: 0x",0
-string_BP:              db "BP: 0x",0
-string_SI:              db "SI: 0x",0
-string_DI:              db "DI: 0x",0
+string_EAX:             db "EAX: 0x",0
+string_EBX:             db "EBX: 0x",0
+string_ECX:             db "ECX: 0x",0
+string_EDX:             db "EDX: 0x",0
+string_ESP:             db "ESP: 0x",0
+string_EBP:             db "EBP: 0x",0
+string_ESI:             db "ESI: 0x",0
+string_EDI:             db "EDI: 0x",0
 
 ; boot strings
 string_init:            db "kernel init (protected mode)",13,10,0
