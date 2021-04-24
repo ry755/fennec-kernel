@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.pink": "java",
+    "stdbool.h": "c",
+    "hlmm.h": "c",
+    "types.h": "c"
+  }
+}
