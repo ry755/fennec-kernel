@@ -6,6 +6,105 @@ section .text
 
     [bits 32]
 
+; map the specified number of new consecutive virtual pages to any free physical blocks
+; automatically marks physical blocks as used
+; inputs:
+; EAX: number of consecutive pages to map
+; outputs:
+; EDI: 4KB-aligned virtual address of the first consecutive page, or zero if failed to map
+vmm_map_virtual:
+    push eax
+    push ecx
+    push edx
+    push ebx
+    push esi
+
+    mov ebx, eax             ; save number of consecutive pages required for later
+
+    ; first, we need to find enough free consecutive entries in the page table
+    call vmm_find_empty_page_entry
+
+    ; convert to virtual address
+    mov ecx, eax
+    mov eax, 0               ; TODO: replace this with the real PD index, once PDs are dynamically created
+    call vmm_calculate_virtual_address_from_indexes
+    push edi                 ; save the pointer so we can return it later
+    mov edx, edi             ; EDX: pointer to first consecutive virtual address
+
+    ; ensure we were able to find enough free entries
+    cmp edi, 0
+    je .fail
+
+    mov ecx, ebx             ; ECX: number of consecutive pages required
+.map_loop:
+    push ecx                 ; save current loop index
+    call pmm_find_free_block ; find the first free 4KB block in physical memory
+    mov esi, edi
+    call pmm_mark_block_used ; mark this physical block as used
+    mov edi, edx
+    ; inputs to vmm_map_physical_to_virtual:
+    ; ESI: physical address, already set above ^^^
+    ; EDI: virtual address
+    ; now we can map it!!!
+    call vmm_map_physical_to_virtual
+    add edx, 4096            ; increment consecutive virtual address pointer to the next address
+    pop ecx                  ; restore current loop index
+    loop .map_loop
+
+    ; finished! now return the first virtual address
+    pop edi
+    jmp short .end
+.fail:
+    mov edi, 0
+.end:
+    pop esi
+    pop ebx
+    pop edx
+    pop ecx
+    pop eax
+    ret
+
+; unmap the specified number of consecutive virtual pages
+; automatically marks physical blocks as free
+; inputs:
+; EAX: number of consecutive pages to unmap
+; ESI: 4KB-aligned virtual address of the first consecutive page
+; outputs:
+; none
+vmm_unmap_virtual:
+    pushad
+
+    mov edx, eax
+    and esi, 0xFFFFF000      ; ensure virtual address is aligned to 4KB block
+    call vmm_calculate_virtual_indexes_from_address
+    mov edi, ecx             ; EDI: page table index
+    mov ecx, edx
+    mov edx, esi             ; EDX: virtual address
+.unmap_loop:
+    ; mark this physical block as free
+    push edi
+    mov esi, edx
+    call vmm_calculate_physical_address_from_virtual
+    mov esi, edi
+    call pmm_mark_block_free
+    pop edi
+
+    ; write an empty entry to the page table
+    ; TODO: this will need to be changed if the kernel ever stops
+    ;       living in an identity-mapped location
+    ;       (specifically paging_write_*initial*_table_entry)
+    mov ax, 0b00000000
+    mov ebx, 0x00000000
+    mov esi, paging_kernel_table
+    call paging_write_initial_table_entry
+
+    inc edi                  ; increment page table index
+    add edx, 4096            ; point to next page
+    loop .unmap_loop
+
+    popad
+    ret
+
 ; find the first empty entry in the page table
 ; inputs:
 ; EAX: number of consecutive pages required
@@ -144,30 +243,30 @@ vmm_map_physical_to_first_free_virtual:
     pop eax
     ret
 
-; unmap the specified virtual address
-; this does *NOT* automatically mark physical blocks as free!
+; calculate the physical address pointed to by the specified virtual address
 ; inputs:
 ; ESI: 4KB-aligned virtual address
 ; outputs:
-; none
-vmm_unmap_virtual:
-    pushad
+; EDI: 4KB-aligned physical address
+vmm_calculate_physical_address_from_virtual:
+    push eax
+    push ecx
+    push edx
+    push esi
 
-    and esi, 0xFFFFF000      ; ensure virtual address is aligned to 4KB block
-
+    ; TODO: this will need to be modified when multiple page tables eventually exist
     call vmm_calculate_virtual_indexes_from_address
+    mov edx, paging_kernel_table
+    imul ecx, 4              ; multiply the page table index by 4 to get an offset
+    add edx, ecx             ; EDX: pointer to page table entry
+    mov eax, dword [edx]
+    and eax, 0xFFFFF000      ; mask out the attribute bits
+    mov edi, eax
 
-    ; write an empty entry to the page table
-    ; TODO: this will need to be changed if the kernel ever stops
-    ;       living in an identity-mapped location
-    ;       (specifically paging_write_*initial*_table_entry)
-    mov edi, ecx
-    mov ax, 0b00000000
-    mov ebx, 0x00000000
-    mov esi, paging_kernel_table
-    call paging_write_initial_table_entry
-
-    popad
+    pop esi
+    pop edx
+    pop ecx
+    pop eax
     ret
 
 ; calculate the virtual address pointed to by the specified page directory and page table indexes
