@@ -46,6 +46,8 @@ static void partition_free(hlmm_blockhead *block) {
 }
 
 static void partition_split(hlmm_blockhead *block, size_t size_new) {
+  size_new = (size_new + (4 - 1)) & -4;
+
   size_t size_old = block->size;
   size_t size_diff = size_old - size_new;
 
