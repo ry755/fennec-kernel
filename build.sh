@@ -9,7 +9,7 @@ nasm bootloader/stage2.s -f bin -o bin/bootloader/stage2.bin
 echo "assembling kernel"
 nasm kernel/kernel.s -i "kernel/include" -g -F dwarf -f elf32 -o bin/kernel/kernel.o
 echo "compiling kernel extensions"
-gcc -Wall -Wextra -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/hlmm.o kernel/include/c/hlmm.c
+i686-elf-gcc -Wall -Wextra -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/hlmm.o kernel/include/c/hlmm.c
 echo "creating kernel flat binary"
 ld -m elf_i386 -Ttext=0x4000 -e real_start --oformat binary -o bin/kernel/kernel.bin bin/kernel/kernel.o bin/kernel/hlmm.o
 
