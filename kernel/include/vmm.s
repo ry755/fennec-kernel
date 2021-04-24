@@ -7,11 +7,13 @@ section .text
     [bits 32]
 
 ; trampoline routines for C code
+global vmm_cdecl_map_virtual
 vmm_cdecl_map_virtual:
     pop eax
     call vmm_map_virtual
     mov eax, edi
     ret
+global vmm_cdecl_unmap_virtual
 vmm_cdecl_unmap_virtual:
     pop eax
     pop esi
