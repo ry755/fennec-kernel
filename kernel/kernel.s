@@ -239,7 +239,7 @@ key_down_callback:
     call kbd_clear_buffer
     ret
 
-hang:
+kernel_hang:
     cli
     mov esi, string_error_hang
     call console_msg_error

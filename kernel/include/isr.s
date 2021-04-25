@@ -17,7 +17,7 @@ isr0:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr1:
     xchg bx, bx              ; bochs breakpoint
@@ -30,7 +30,7 @@ isr1:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr2:
     xchg bx, bx              ; bochs breakpoint
@@ -43,7 +43,7 @@ isr2:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr3:
     xchg bx, bx              ; bochs breakpoint
@@ -56,7 +56,7 @@ isr3:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr4:
     xchg bx, bx              ; bochs breakpoint
@@ -69,7 +69,7 @@ isr4:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr5:
     xchg bx, bx              ; bochs breakpoint
@@ -82,7 +82,7 @@ isr5:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr6:
     xchg bx, bx              ; bochs breakpoint
@@ -95,7 +95,7 @@ isr6:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr7:
     xchg bx, bx              ; bochs breakpoint
@@ -108,7 +108,7 @@ isr7:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr8:
     xchg bx, bx              ; bochs breakpoint
@@ -129,7 +129,7 @@ isr8:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr9:
     xchg bx, bx              ; bochs breakpoint
@@ -142,7 +142,7 @@ isr9:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr10:
     xchg bx, bx              ; bochs breakpoint
@@ -163,7 +163,7 @@ isr10:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr11:
     xchg bx, bx              ; bochs breakpoint
@@ -184,7 +184,7 @@ isr11:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr12:
     xchg bx, bx              ; bochs breakpoint
@@ -205,7 +205,7 @@ isr12:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr13:
     xchg bx, bx              ; bochs breakpoint
@@ -226,7 +226,7 @@ isr13:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr14:
     xchg bx, bx              ; bochs breakpoint
@@ -247,7 +247,7 @@ isr14:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr15:
     xchg bx, bx              ; bochs breakpoint
@@ -260,7 +260,7 @@ isr15:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr16:
     xchg bx, bx              ; bochs breakpoint
@@ -273,7 +273,7 @@ isr16:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr17:
     xchg bx, bx              ; bochs breakpoint
@@ -294,7 +294,7 @@ isr17:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr18:
     xchg bx, bx              ; bochs breakpoint
@@ -307,7 +307,7 @@ isr18:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr19:
     xchg bx, bx              ; bochs breakpoint
@@ -320,7 +320,7 @@ isr19:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr20:
     xchg bx, bx              ; bochs breakpoint
@@ -333,7 +333,7 @@ isr20:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr21:
     xchg bx, bx              ; bochs breakpoint
@@ -346,7 +346,7 @@ isr21:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr22:
     xchg bx, bx              ; bochs breakpoint
@@ -359,7 +359,7 @@ isr22:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr23:
     xchg bx, bx              ; bochs breakpoint
@@ -372,7 +372,7 @@ isr23:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr24:
     xchg bx, bx              ; bochs breakpoint
@@ -385,7 +385,7 @@ isr24:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr25:
     xchg bx, bx              ; bochs breakpoint
@@ -398,7 +398,7 @@ isr25:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr26:
     xchg bx, bx              ; bochs breakpoint
@@ -411,7 +411,7 @@ isr26:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr27:
     xchg bx, bx              ; bochs breakpoint
@@ -424,7 +424,7 @@ isr27:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr28:
     xchg bx, bx              ; bochs breakpoint
@@ -437,7 +437,7 @@ isr28:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr29:
     xchg bx, bx              ; bochs breakpoint
@@ -450,7 +450,7 @@ isr29:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr30:
     xchg bx, bx              ; bochs breakpoint
@@ -471,7 +471,7 @@ isr30:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr31:
     xchg bx, bx              ; bochs breakpoint
@@ -484,7 +484,7 @@ isr31:
     call console_print_hex_byte
     mov esi, string_crlf
     call console_print_string
-    jmp hang
+    jmp kernel_hang
     iret
 isr32:                       ; system timer interrupt
     push eax
