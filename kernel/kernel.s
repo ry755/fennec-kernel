@@ -253,6 +253,8 @@ section .bss
 
 section .text
 ; include other source files
+    ; panic subroutines
+    %include "panic.s"
     ; physical memory management subroutines
     %include "pmm.s"
     ; virtual memory management subroutines
