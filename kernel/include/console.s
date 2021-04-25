@@ -31,7 +31,6 @@ console_init:
 
 ; initialize the text console from a buffer
 ; inputs:
-; CX: buffer size
 ; DH: foreground color
 ; DL: background color
 ; ESI: pointer to ASCII buffer

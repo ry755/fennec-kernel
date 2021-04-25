@@ -60,10 +60,6 @@ protected_start:
     cld
 subsystem_init:
     ; initialize text console using saved screen buffer from stage2
-    movzx ax, byte [console.x_size]
-    movzx bx, byte [console.y_size]
-    imul ax, bx
-    mov cx, ax
     mov esi, 0x3000
     mov dh, 0x0F
     mov dl, 0x00
