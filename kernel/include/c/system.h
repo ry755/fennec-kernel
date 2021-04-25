@@ -44,6 +44,7 @@
 #define LLONG_MIN (-LLONG_MAX - 1LL)
 #define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
 
+
 typedef __INT8_TYPE__ int8_t;
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;
@@ -144,13 +145,12 @@ typedef __SIZE_TYPE__ size_t;
 
 #define SIZE_MAX __SIZE_MAX__
 
-typedef struct {
-  // Using Clang's version, similar across GCC/CLANG
-  long long __clang_max_align_nonce1
-      __attribute__((__aligned__(__alignof__(long long))));
-  long double __clang_max_align_nonce2
-      __attribute__((__aligned__(__alignof__(long double))));
-} max_align_t;
+
+typedef uint8_t byte_t;
+typedef uint16_t word_t;
+typedef uint32_t dword_t;
+typedef uint64_t qword_t;
+
 
 #define NULL ((void *)0)
 
@@ -162,6 +162,9 @@ typedef struct {
 #define __alignof_is_defined 1
 
 #define noreturn _Noreturn
+#define static_assert _Static_assert
+
+#define attribute __attribute__
 
 #define bool _Bool
 #define true ((_Bool)+1u)
@@ -180,4 +183,15 @@ typedef struct {
 #define xor ^
 #define xor_eq ^=
 
-#define static_assert _Static_assert
+
+extern void assert_cdecl(dword_t condition, const char *message);
+extern noreturn void assert_cdecl_fail(const char *message);
+
+#ifdef NDEBUG
+  #define assert(_cond) ((void)0)
+#else
+  #define STR_HELPER(expr) #expr
+  #define STR(expr) STR_HELPER(expr)
+
+  #define assert(_cond) ((_cond) ? (void)0 : assert_cdecl_fail("afail ("#_cond") "__FILE__":"STR(__LINE__)))
+#endif
