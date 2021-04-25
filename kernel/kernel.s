@@ -289,6 +289,8 @@ section .text
     %include "pic.s"
     ; programmable interval timer subroutines
     %include "pit.s"
+    ; string processing subroutines
+    %include "str.s"
     ; text strings
     %include "strings.s"
 
