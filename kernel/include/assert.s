@@ -4,6 +4,22 @@ section .text
 
     [bits 32]
 
+; trampoline routine for C code
+global assert_cdecl
+assert_cdecl:
+    push ebp
+    mov ebp, esp
+
+    push esi
+
+    mov eax, dword [ebp+8]
+    mov esi, dword [ebp+12]
+    call assert
+
+    pop esi
+    pop ebp
+    ret
+
 ; panic if condition is zero
 ; TODO: in the future when multitasking is implemented,
 ;       this should only panic that process instead of the whole kernel
