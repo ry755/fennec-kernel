@@ -40,4 +40,5 @@ string_warn_large_bss:  db "warning: kernel .bss section extends past end of con
 string_error_exception: db "exception: 0x",0
 string_error_code:      db "error code: 0x",0
 string_error_panic:     db "panic: ",0
+string_error_assertion: db "assertion failed",13,10,0
 string_error_hang:      db "hanging, interrupts disabled",13,10,0

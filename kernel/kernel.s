@@ -253,6 +253,8 @@ section .bss
 
 section .text
 ; include other source files
+    ; assertion subroutines
+    %include "assert.s"
     ; panic subroutines
     %include "panic.s"
     ; physical memory management subroutines
