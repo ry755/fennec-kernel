@@ -3,8 +3,17 @@
 extern void *vmm_cdecl_map_virtual(size_t count);
 extern void vmm_cdecl_unmap_virtual(void *ptr, size_t count);
 
+#define SIZE_PAGE 4096
+#define SIZE_MINIMUM 8
+#define SIZE_ALIGN 8
+
+#define PAGECOUNT_MINIMUM 4
+
+#define FREE_FALSE 0
+#define FREE_TRUE 1
+
 typedef struct hlmm_blockhead_s {
-  _Alignas(qword_t)
+  _Alignas(SIZE_ALIGN)
   struct hlmm_mapping_s *mapping;
   struct hlmm_blockhead_s *next;
   size_t free, size;
@@ -12,20 +21,13 @@ typedef struct hlmm_blockhead_s {
 } hlmm_blockhead_t;
 
 typedef struct hlmm_mapping_s {
-  _Alignas(qword_t)
+  _Alignas(SIZE_ALIGN)
   size_t pagecount;
   struct hlmm_blockhead_s first[];
 } hlmm_mapping_t;
 
 #define SIZE_MAPPING sizeof(hlmm_mapping_t)
 #define SIZE_BLOCKHEAD sizeof(hlmm_blockhead_t)
-#define SIZE_MINIMUM 8
-#define SIZE_PAGE 4096
-
-#define PAGECOUNT_MINIMUM 4
-
-#define FREE_FALSE 0
-#define FREE_TRUE 1
 
 static void partition_merge(hlmm_blockhead_t *block) {
   hlmm_blockhead_t *block_next = block->next;
@@ -48,7 +50,7 @@ static void partition_free(hlmm_blockhead_t *block) {
 }
 
 static void partition_split(hlmm_blockhead_t *block, size_t size_new) {
-  size_new = (size_new + (8 - 1)) & -8;
+  size_new = (size_new + (SIZE_ALIGN - 1)) & -SIZE_ALIGN;
 
   size_t size_old = block->size;
   size_t size_diff = size_old - size_new;
