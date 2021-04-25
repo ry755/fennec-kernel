@@ -2,7 +2,13 @@
 set -e
 mkdir -p bin/{bootloader,kernel}
 
-CC=i686-elf-gcc
+if [ -z "$CC" ]; then
+  if command -v i686-elf-gcc 2>&1 > /dev/null; then
+    CC=i686-elf-gcc
+  else
+    CC=gcc
+  fi
+fi
 
 echo "assembling stage1"
 nasm bootloader/stage1.s -f bin -o bin/bootloader/stage1.bin
@@ -11,10 +17,11 @@ nasm bootloader/stage2.s -f bin -o bin/bootloader/stage2.bin
 echo "assembling kernel"
 nasm kernel/kernel.s -i "kernel/include" -g -F dwarf -f elf32 -o bin/kernel/kernel.o
 echo "compiling kernel extensions"
-$CC -Wall -Wextra -std=c17 -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/hlmm.o -x c kernel/include/c/hlmm.c
-$CC -Wall -Wextra -std=c17 -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/dmem.o -x c kernel/include/c/dmem.c
+for ext in hlmm dmem rand string; do
+  $CC -Wall -Wextra -std=c17 -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/$ext.o -x c kernel/include/c/$ext.c
+done
 echo "creating kernel flat binary"
-ld -m elf_i386 -Ttext=0x4000 -e real_start --oformat binary -o bin/kernel/kernel.bin bin/kernel/kernel.o bin/kernel/hlmm.o bin/kernel/dmem.o
+ld -m elf_i386 -Ttext=0x4000 -e real_start --oformat binary -o bin/kernel/kernel.bin bin/kernel/kernel.o bin/kernel/hlmm.o bin/kernel/dmem.o bin/kernel/rand.o bin/kernel/string.o
 
 echo "creating kernel symbol file (.text only)"
 nm bin/kernel/kernel.o -p | grep ' T \| t ' | awk '{ print $1" "$3 }' > bin/kernel/kernel.sym

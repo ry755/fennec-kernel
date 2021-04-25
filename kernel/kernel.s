@@ -189,6 +189,12 @@ subsystem_init:
     mov dl, 0x00
     call console_msg_ok
 
+    push 0
+extern hlmm_create
+    call hlmm_create
+
+    jmp kernel_hang
+
     mov esi, string_init_sleeping
     mov dl, 0x00
     call console_msg_ok
