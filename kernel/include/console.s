@@ -320,11 +320,6 @@ console_print_char:
     call gfx_draw_font_bitmap
     add byte [console.x], 1
 .end:
-    ; update the text cursor location
-    ;movzx eax, byte [console.y]
-    ;movzx ebx, byte [console.x]
-    ;call display_move_cursor
-
     pop es
     popad
     ret
