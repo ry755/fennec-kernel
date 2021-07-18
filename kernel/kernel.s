@@ -28,14 +28,9 @@ real_start:
     mov cl, 8
     call vesa_set_mode
 
-    ;mov eax, dword [vesa_screen.framebuffer]
-    ;mov ebx, 0x4B000         ; size of 640x480 at 8 bpp
-    ;mov edi, gdt.vesa_framebuffer
-    ;call gdt_write_entry_real
-
     ; enter protected mode
     cli
-    lgdt [gdt_desc]          ; set GDT using entries defined in gdt.s
+    lgdt [gdt_desc]
     mov eax, cr0
     or eax, 0x01
     mov cr0, eax
@@ -101,7 +96,7 @@ subsystem_init:
     call console_msg_boot
 
     ; print pmm_base
-    mov esi, string_pmm_base
+    mov esi, string_init_pmm_base
     mov dl, 0x00
     call console_msg_boot
     mov eax, pmm_base
@@ -184,6 +179,27 @@ subsystem_init:
     mov dl, 0x00
     call console_msg_boot
 
+    ; set up memory allocator
+    ; create a 2 MiB context for allocations
+    mov esi, string_init_alloc
+    mov dl, 0x00
+    call console_msg_boot
+    mov eax, 2097152
+    call hlmm_wrapper_create
+    mov dword [kernel_hlmm_ctx_ptr], edi
+
+    ; print kernel_hlmm_ctx_ptr
+    mov esi, string_init_alloc_ptr
+    mov dl, 0x00
+    call console_msg_boot
+    mov eax, edi
+    mov dl, 0x00
+    mov dh, 0x0F
+    call console_print_hex_dword
+    mov esi, string_crlf
+    mov dl, 0x00
+    call console_print_string
+
     ; init done, welcome!
     mov esi, string_init_welcome
     mov dl, 0x00
@@ -263,6 +279,10 @@ section .text
     %include "pmm.s"
     ; virtual memory management subroutines
     %include "vmm.s"
+    ; high-level memory management wrapper subroutines
+    %include "hlmm_wrapper.s"
+    ; memory allocation subroutines
+    %include "malloc.s"
     ; paging routines
     %include "paging.s"
     ; global descriptor table
@@ -312,4 +332,5 @@ image_fennec:
     ;incbin "images/test.raw"
 
 section .bss
+kernel_hlmm_ctx_ptr: resd 1
 kernel_end:
