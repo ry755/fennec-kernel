@@ -159,47 +159,34 @@ void *hlmm_allocate(hlmm_ctx *ctx, void *ptr, size_t size) {
   if (ctx == NULL) return NULL;
   if (size > 0 && size < SIZE_MINIMUM) size = SIZE_MINIMUM;
 
-   hlmm_mapping_t *mapping = (hlmm_mapping_t *)ctx;
+  hlmm_mapping_t *mapping = (hlmm_mapping_t *)ctx;
 
-  if (ptr == NULL)
-  {
+  if (ptr == NULL) {
     hlmm_blockhead_t *block = mapping_allocate(mapping, size);
     if (block != NULL) return block;
     else return NULL;
-  }
-  else
-  {
+  } else {
     hlmm_blockhead_t *block = (hlmm_blockhead_t *)ptr - 1;
     size_t size_old = block->size;
-    if (size == 0)
-    {
+    if (size == 0) {
       partition_free(block);
       if (block->mapping != mapping) mapping_tryunmap(block->mapping);
       return NULL;
-    }
-    else if (size == size_old)
-    {
+    } else if (size == size_old) {
       return block;
-    }
-    else if (size < size_old)
-    {
+    } else if (size < size_old) {
       partition_split(block, size);
       return block;
-    }
-    else if (size > size_old)
-    {
+    } else if (size > size_old) {
       hlmm_blockhead_t *block_next = block->next;
       if (block_next != NULL
           && block_next->free == FREE_TRUE
           && block_next->mapping == block->mapping
-          && block_next->size + SIZE_BLOCKHEAD + size_old >= size)
-      {
+          && block_next->size + SIZE_BLOCKHEAD + size_old >= size) {
         partition_merge(block);
         partition_split(block, size);
         return block->body;
-      }
-      else
-      {
+      } else {
         partition_free(block);
         return hlmm_allocate(ctx, NULL, size);
       }
