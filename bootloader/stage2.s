@@ -577,22 +577,22 @@ A20_enable:
     int 0x15
     jc A20_fail
     cmp ah, 0
-    jnz A20_fail
+    jne A20_fail
 
     mov ax, 0x2402
     int 0x15
     jc A20_fail
     cmp ah, 0
-    jnz A20_fail
+    jne A20_fail
 
     cmp al, 1
-    jz A20_enable_done
+    je A20_enable_done
 
     mov ax, 0x2401
     int 0x15
     jc A20_fail
     cmp ah, 0
-    jnz A20_fail
+    jne A20_fail
 A20_enable_done:
     ret
 
