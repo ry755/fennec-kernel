@@ -205,18 +205,15 @@ subsystem_init:
     mov dl, 0x00
     call console_msg_ok
 
-    push 0
-extern hlmm_create
-    call hlmm_create
+    ;mov esi, string_init_sleeping
+    ;mov dl, 0x00
+    ;call console_msg_ok
 
-    jmp kernel_hang
+    ;mov eax, 2
+    ;call time_sleep
 
-    mov esi, string_init_sleeping
-    mov dl, 0x00
-    call console_msg_ok
-
-    mov eax, 2
-    call time_sleep
+    call view_copy_test
+    jmp kernel_hang.loop
 
     mov dl, 0x00
     call console_clear
@@ -299,6 +296,8 @@ section .text
     %include "vesa.s"
     ; VESA graphics subroutines
     %include "gfx.s"
+    ; "View" isolated framebuffer subroutines
+    %include "view.s"
     ; console subroutines
     %include "console.s"
     ; window management subroutines
