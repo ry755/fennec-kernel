@@ -19,6 +19,8 @@ hlmm_wrapper_create:
     push ecx
     push edx
 
+    ; FIXME: figure out why this page faults on bochs; maybe an issue with pmm or vmm?
+
     push eax
     call hlmm_create
     add esp, 4               ; clean up the stack (add 4 to inc. past saved EAX)

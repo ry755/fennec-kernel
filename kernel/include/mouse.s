@@ -71,6 +71,22 @@ mouse_update:
     and al, 0b00000111
     mov byte [mouse_button_bitmap], al
 
+    cmp word [mouse_x], 640
+    jb .no_set_max_x
+    mov word [mouse_x], 640
+.no_set_max_x:
+    cmp word [mouse_x], 0
+    jg .no_set_min_x
+    mov word [mouse_x], 0
+.no_set_min_x:
+    cmp word [mouse_y], 480
+    jb .no_set_max_y
+    mov word [mouse_y], 480
+.no_set_max_y:
+    cmp word [mouse_y], 0
+    jg .no_set_min_y
+    mov word [mouse_y], 0
+.no_set_min_y:
     popad
     ret
 

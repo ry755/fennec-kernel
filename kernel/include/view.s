@@ -4,6 +4,8 @@
 
 section .text
 
+extern view_render
+
 struc view
     .pointer:    resd 1      ; pointer to an instance of view_framebuffer
     .width:      resw 1      ; width of the visible area of the View
@@ -28,7 +30,7 @@ endstruc
 ; EDI: virtual address of allocated framebuffer
 view_init:
     call malloc
-    mov dword [view_main_framebuffer], edi
+    mov dword [view_main_framebuffer + view_framebuffer.pointer], edi
     ret
 
 ; allocate memory for a new View, and return a pointer to the allocated framebuffer
@@ -76,10 +78,40 @@ view_destroy:
 
 ; render all Views in order, starting from the specified View
 ; inputs:
-; ESI: first view struct
+; ESI: pointer to first source view struct
+; EDI: pointer to target view_framebuffer struct
 ; outputs:
 ; none
-view_render:
+view_wrapper_render:
+    push eax
+    push ecx
+    push edx
+
+    push esi                 ; push *view_first
+    push edi                 ; push *target
+    call view_render
+    add esp, 8               ; clean up the stack (add 8 to inc. past saved ESI and EDI)
+
+    pop edx
+    pop ecx
+    pop eax
+    ret
+
+; trampoline routine for C code
+global view_cdecl_copy
+view_cdecl_copy:
+    push ebp
+    mov ebp, esp
+
+    push esi
+
+    mov edi, dword [ebp+8]
+    mov esi, dword [ebp+12]
+    call view_copy
+
+    pop esi
+    pop ebp
+    ret
 
 ; copy a smaller framebuffer into a larger framebuffer
 ; inputs:
@@ -87,18 +119,17 @@ view_render:
 ; EDI: pointer to target view_framebuffer struct
 ; outputs:
 ; none
-view_copy_2d:
+view_copy:
     pushad
 
     ; calculate the initial pointer to the target framebuffer
     ; initial offset = ((source.y * target.width) + source.x)
     ; initial pointer = target.pointer + offset
-    movzx eax, word [esi + view.y]                 ; source.y
+    movsx eax, word [esi + view.y]                 ; source.y
     movzx edx, word [edi + view_framebuffer.width] ; target.width
     imul eax, edx                                  ; source.y * target.width
-    movzx edx, word [esi + view.x]                 ; source.x
+    movsx edx, word [esi + view.x]                 ; source.x
     add eax, edx                                   ; ((source.y * target.width) + source.x)
-    movzx eax, ax
     add eax, dword [edi + view_framebuffer.pointer]
 
     ; get pointer to the source framebuffer
@@ -126,10 +157,22 @@ view_copy_2d:
     push ebx                 ; save source framebuffer pointer
     push ecx                 ; save number of remaining pixels left to copy
     movzx ecx, word [esi + view.width]
+    ; check to make sure we aren't writing past the Y boundaries (in either direction)
+    mov dx, word [.current_y]
+    cmp dx, word [edi + view_framebuffer.height]
+    jae .no_write
+    cmp edx, 0
+    jl .no_write
 .pixel_loop:
-    ; TODO: check to make sure we aren't trying to write past the edges of the framebuffer
+    ; check to make sure we aren't writing past the X boundaries (in either direction)
+    mov dx, word [.current_x]
+    cmp dx, word [edi + view_framebuffer.width]
+    jae .no_write
+    cmp edx, 0
+    jl .no_write
     mov dl, byte [ebx]
     mov byte [eax], dl
+.no_write:
     inc eax
     inc ebx
     inc word [.current_x]
@@ -159,43 +202,89 @@ view_copy_2d:
 .current_x:  dw 0x0000
 .current_y:  dw 0x0000
 
-view_copy_test:
-    push esi
-    push edi
-
-    mov esi, view_test_struct
-    mov edi, view_main_framebuffer
-    call view_copy_2d
-
-    pop edi
-    pop esi
-    ret
-
 section .data
-view_test_struct:
+view_mouse_struct:
     istruc view
-        at view.pointer,    dd view_test_framebuffer_struct
+        at view.pointer,    dd view_mouse_framebuffer_struct
+        at view.width,      dw 8
+        at view.height,     dw 8
+        at view.x,          dw 0
+        at view.y,          dw 0
+        at view.attributes, db 0x00
+        at view.next_child, dd 0x00000000
+        at view.next,       dd 0x00000000
+    iend
+view_mouse_framebuffer_struct:
+    istruc view_framebuffer
+        at view_framebuffer.pointer, dd view_mouse_framebuffer
+        at view_framebuffer.width,   dw 8
+        at view_framebuffer.height,  dw 8
+    iend
+view_mouse_framebuffer:
+    times 64 db 0x0F
+
+view_test1_struct:
+    istruc view
+        at view.pointer,    dd view_test1_framebuffer_struct
         at view.width,      dw 256
         at view.height,     dw 256
         at view.x,          dw 16
         at view.y,          dw 16
         at view.attributes, db 0x00
-        at view.next_child, dd 0x00000000
+        at view.next_child, dd view_test2_struct
+        ;at view.next,       dd view_mouse_struct
         at view.next,       dd 0x00000000
     iend
-view_test_framebuffer_struct:
+view_test1_framebuffer_struct:
     istruc view_framebuffer
-        at view_framebuffer.pointer, dd view_test_framebuffer
+        at view_framebuffer.pointer, dd view_test1_framebuffer
         at view_framebuffer.width,   dw 256
         at view_framebuffer.height,  dw 256
     iend
-
-view_test_framebuffer:
+view_test1_framebuffer:
     incbin "images/fennec_boot.raw"
+
+view_test2_struct:
+    istruc view
+        at view.pointer,    dd view_test2_framebuffer_struct
+        at view.width,      dw 256
+        at view.height,     dw 256
+        at view.x,          dw 32
+        at view.y,          dw 32
+        at view.attributes, db 0x00
+        at view.next_child, dd 0x00000000
+        at view.next,       dd 0x00000000
+    iend
+view_test2_framebuffer_struct:
+    istruc view_framebuffer
+        at view_framebuffer.pointer, dd view_test2_framebuffer
+        at view_framebuffer.width,   dw 256
+        at view_framebuffer.height,  dw 256
+    iend
+view_test2_framebuffer:
+    incbin "images/ry_clarimount.raw"
+
+view_wallpaper_struct:
+    istruc view
+        at view.pointer,    dd view_wallpaper_framebuffer_struct
+        at view.width,      dw 640
+        at view.height,     dw 480
+        at view.x,          dw 0
+        at view.y,          dw 0
+        at view.attributes, db 0x00
+        at view.next_child, dd 0x00000000
+        at view.next,       dd view_test1_struct
+    iend
+view_wallpaper_framebuffer_struct:
+    istruc view_framebuffer
+        at view_framebuffer.pointer, dd 0x00000000
+        at view_framebuffer.width,   dw 640
+        at view_framebuffer.height,  dw 480
+    iend
 
 view_main_framebuffer:
     istruc view_framebuffer
-        at view_framebuffer.pointer, dd 0x00100000
+        at view_framebuffer.pointer, dd 0x00000000
         at view_framebuffer.width,   dw 640
         at view_framebuffer.height,  dw 480
     iend

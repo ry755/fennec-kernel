@@ -493,6 +493,20 @@ isr32:                       ; system timer interrupt
     inc eax
     mov dword [system_timer], eax
 
+    ;mov ax, word [mouse_x]
+    ;mov bx, word [mouse_y]
+    ;mov word [view_mouse_struct + view.x], ax
+    ;mov word [view_mouse_struct + view.y], bx
+
+    ;mov esi, view_wallpaper_struct
+    ;mov edi, view_main_framebuffer
+    ;call view_wrapper_render
+
+    ;mov ecx, 0x0004B000
+    ;mov esi, [view_main_framebuffer + view_framebuffer.pointer]
+    ;mov edi, 0x00100000
+    ;rep movsb
+
     mov al, 32
     call pic_eoi
     pop eax
@@ -507,6 +521,21 @@ isr33:                       ; keyboard interrupt
     xor eax, eax
     in al, 0x60              ; data is available, handle it
     call kbd_event
+
+    ; update screen
+    mov ax, word [mouse_x]
+    mov bx, word [mouse_y]
+    mov word [view_mouse_struct + view.x], ax
+    mov word [view_mouse_struct + view.y], bx
+
+    mov esi, view_wallpaper_struct
+    mov edi, view_main_framebuffer
+    call view_wrapper_render
+
+    mov ecx, 0x0004B000
+    mov esi, [view_main_framebuffer + view_framebuffer.pointer]
+    mov edi, 0x00100000
+    rep movsb
 .end:
     mov al, 33
     call pic_eoi
