@@ -247,6 +247,14 @@ isr14:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
+    mov esi, string_virtual_address
+    call console_msg_error
+    mov eax, cr2
+    mov dh, 0x0F
+    mov dl, 0x00
+    call console_print_hex_dword
+    mov esi, string_crlf
+    call console_print_string
     jmp kernel_hang
     iret
 isr15:
@@ -493,19 +501,20 @@ isr32:                       ; system timer interrupt
     inc eax
     mov dword [system_timer], eax
 
-    ;mov ax, word [mouse_x]
-    ;mov bx, word [mouse_y]
-    ;mov word [view_mouse_struct + view.x], ax
-    ;mov word [view_mouse_struct + view.y], bx
+    ; update views
+    mov ax, word [mouse_x]
+    mov bx, word [mouse_y]
+    mov word [view_mouse_struct + view.x], ax
+    mov word [view_mouse_struct + view.y], bx
 
-    ;mov esi, view_wallpaper_struct
-    ;mov edi, view_main_framebuffer
-    ;call view_wrapper_render
+    mov esi, view_wallpaper_struct
+    mov edi, view_main_framebuffer
+    call view_wrapper_render
 
-    ;mov ecx, 0x0004B000
-    ;mov esi, [view_main_framebuffer + view_framebuffer.pointer]
-    ;mov edi, 0x00100000
-    ;rep movsb
+    mov ecx, 0x0004B000
+    mov esi, [view_main_framebuffer + view_framebuffer.pointer]
+    mov edi, 0x00100000
+    rep movsb
 
     mov al, 32
     call pic_eoi
@@ -521,21 +530,6 @@ isr33:                       ; keyboard interrupt
     xor eax, eax
     in al, 0x60              ; data is available, handle it
     call kbd_event
-
-    ; update screen
-    mov ax, word [mouse_x]
-    mov bx, word [mouse_y]
-    mov word [view_mouse_struct + view.x], ax
-    mov word [view_mouse_struct + view.y], bx
-
-    mov esi, view_wallpaper_struct
-    mov edi, view_main_framebuffer
-    call view_wrapper_render
-
-    mov ecx, 0x0004B000
-    mov esi, [view_main_framebuffer + view_framebuffer.pointer]
-    mov edi, 0x00100000
-    rep movsb
 .end:
     mov al, 33
     call pic_eoi
