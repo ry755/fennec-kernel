@@ -2,13 +2,7 @@
 set -e
 mkdir -p bin/{bootloader,kernel}
 
-if [ -z "$CC" ]; then
-  if command -v i686-elf-gcc 2>&1 > /dev/null; then
-    CC=i686-elf-gcc
-  else
-    CC=gcc
-  fi
-fi
+CC=~/opt/cross/bin/i686-elf-gcc
 
 echo "assembling stage1"
 nasm bootloader/stage1.s -f bin -o bin/bootloader/stage1.bin
@@ -30,7 +24,7 @@ echo "creating kernel symbol file (all sections, line numbers included)"
 nm bin/kernel/kernel.o -l -p > bin/kernel/kernel_debug.sym
 
 echo "creating boot image"
-python3 ryfs/ryfs.py create bin/boot.img -l Fennec -s 1474560 -b bin/bootloader/stage1.bin
+python3 ryfs/ryfs.py create bin/boot.img -l fennec -s 1474560 -b bin/bootloader/stage1.bin
 python3 ryfs/ryfs.py add bin/boot.img bin/bootloader/stage2.bin
 python3 ryfs/ryfs.py add bin/boot.img bin/kernel/kernel.bin
 echo "boot image created"
