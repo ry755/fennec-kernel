@@ -60,10 +60,6 @@ subsystem_init:
     mov dl, 0x00
     call console_init_from_buffer
 
-    ; TODO: maybe it would be cool to have a better looking boot up screen
-    ;       maybe make it graphical? or have a progress bar showing the progress
-    ;       of initializing the different subsystems
-
     ; print init message
     mov esi, string_init
     mov dl, 0x00
