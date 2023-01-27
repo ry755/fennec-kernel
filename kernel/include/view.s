@@ -97,111 +97,6 @@ view_wrapper_render:
     pop eax
     ret
 
-; trampoline routine for C code
-global view_cdecl_copy
-view_cdecl_copy:
-    push ebp
-    mov ebp, esp
-
-    push esi
-
-    mov edi, dword [ebp+8]
-    mov esi, dword [ebp+12]
-    call view_copy
-
-    pop esi
-    pop ebp
-    ret
-
-; copy a smaller framebuffer into a larger framebuffer
-; inputs:
-; ESI: pointer to source view struct
-; EDI: pointer to target view_framebuffer struct
-; outputs:
-; none
-view_copy:
-    pushad
-
-    ; calculate the initial pointer to the target framebuffer
-    ; initial offset = ((source.y * target.width) + source.x)
-    ; initial pointer = target.pointer + offset
-    movsx eax, word [esi + view.y]                 ; source.y
-    movzx edx, word [edi + view_framebuffer.width] ; target.width
-    imul eax, edx                                  ; source.y * target.width
-    movsx edx, word [esi + view.x]                 ; source.x
-    add eax, edx                                   ; ((source.y * target.width) + source.x)
-    add eax, dword [edi + view_framebuffer.pointer]
-
-    ; get pointer to the source framebuffer
-    mov ebx, dword [esi + view.pointer]
-    mov ebx, dword [ebx + view_framebuffer.pointer]
-
-    ; calculate the number of bytes to copy
-    movzx ecx, word [esi + view.width]
-    movzx edx, word [esi + view.height]
-    imul ecx, edx
-
-    ; EAX = initial pointer to the target framebuffer
-    ; EBX = pointer to source framebuffer
-    ; ECX = total number of bytes to copy
-
-    ; set X and Y counters to the starting point
-    mov dx, word [esi + view.x]
-    mov word [.original_x], dx
-    mov word [.current_x], dx
-    mov dx, word [esi + view.y]
-    mov word [.current_y], dx
-.loop:
-    ; copy a single line of pixels
-    push eax                 ; save target framebuffer pointer
-    push ebx                 ; save source framebuffer pointer
-    push ecx                 ; save number of remaining pixels left to copy
-    movzx ecx, word [esi + view.width]
-    ; check to make sure we aren't writing past the Y boundaries (in either direction)
-    mov dx, word [.current_y]
-    cmp dx, word [edi + view_framebuffer.height]
-    jae .no_write
-    cmp edx, 0
-    jl .no_write
-.pixel_loop:
-    ; check to make sure we aren't writing past the X boundaries (in either direction)
-    mov dx, word [.current_x]
-    cmp dx, word [edi + view_framebuffer.width]
-    jae .no_write
-    cmp edx, 0
-    jl .no_write
-    mov dl, byte [ebx]
-    mov byte [eax], dl
-.no_write:
-    inc eax
-    inc ebx
-    inc word [.current_x]
-    loop .pixel_loop
-
-    ; set X and Y counters to the beginning of the next line
-    inc word [.current_y]
-    mov dx, word [.original_x]
-    mov word [.current_x], dx
-
-    pop ecx                  ; restore number of remaining pixels left to copy
-    pop ebx                  ; restore source framebuffer pointer
-    pop eax                  ; restore target framebuffer pointer
-    movzx edx, word [esi + view.width]
-    sub ecx, edx             ; skip number of loop iterations for one source line
-    mov edx, dword [esi + view.pointer]
-    movzx edx, word [edx + view_framebuffer.width]
-    add ebx, edx             ; increment the source framebuffer pointer by one source line
-    movzx edx, word [edi + view_framebuffer.width]
-    add eax, edx             ; increment the target framebuffer pointer by one target line
-    cmp ecx, 0               ; loop if not zero
-    jne .loop
-
-    popad
-    ret
-.original_x: dw 0x0000
-.current_x:  dw 0x0000
-.current_y:  dw 0x0000
-
 section .data
 view_mouse_struct:
     istruc view
@@ -232,8 +127,7 @@ view_test1_struct:
         at view.y,          dw 16
         at view.attributes, db 0x00
         at view.next_child, dd view_test2_struct
-        ;at view.next,       dd view_mouse_struct
-        at view.next,       dd 0x00000000
+        at view.next,       dd view_mouse_struct
     iend
 view_test1_framebuffer_struct:
     istruc view_framebuffer
@@ -249,8 +143,8 @@ view_test2_struct:
         at view.pointer,    dd view_test2_framebuffer_struct
         at view.width,      dw 256
         at view.height,     dw 256
-        at view.x,          dw 32
-        at view.y,          dw 32
+        at view.x,          dw 64
+        at view.y,          dw 64
         at view.attributes, db 0x00
         at view.next_child, dd 0x00000000
         at view.next,       dd 0x00000000
@@ -277,14 +171,14 @@ view_wallpaper_struct:
     iend
 view_wallpaper_framebuffer_struct:
     istruc view_framebuffer
-        at view_framebuffer.pointer, dd 0x00000000
+        at view_framebuffer.pointer, dd 0x00000000 ; initialized at bootup
         at view_framebuffer.width,   dw 640
         at view_framebuffer.height,  dw 480
     iend
 
 view_main_framebuffer:
     istruc view_framebuffer
-        at view_framebuffer.pointer, dd 0x00000000
+        at view_framebuffer.pointer, dd 0x00000000 ; initialized at bootup
         at view_framebuffer.width,   dw 640
         at view_framebuffer.height,  dw 480
     iend

@@ -11,7 +11,7 @@ nasm bootloader/stage2.s -f bin -o bin/bootloader/stage2.bin
 echo "assembling kernel"
 nasm kernel/kernel.s -i "kernel/include" -g -F dwarf -f elf32 -o bin/kernel/kernel.o
 echo "compiling kernel extensions"
-for ext in putchar puts puthex hlmm dmem rand view_render; do
+for ext in putchar puts puthex hlmm dmem rand view; do
   $CC -Wall -Wextra -std=c17 -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/$ext.o -x c kernel/include/c/$ext.c
 done
 echo "creating kernel flat binary"

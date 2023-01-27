@@ -15,4 +15,4 @@ typedef struct __attribute__((__packed__)) view_s {
 } view_t;
 
 void view_render(framebuffer_t *target, view_t *view_first);
-extern void view_cdecl_copy(framebuffer_t* target, view_t* view);
+void view_copy(framebuffer_t *target, view_t *source);
