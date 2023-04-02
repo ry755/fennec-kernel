@@ -15,7 +15,7 @@ for ext in putchar puts puthex hlmm dmem rand view; do
   $CC -Wall -Wextra -std=c17 -m32 -march=i386 -masm=intel -mstackrealign -fno-pie -ffreestanding -nostdlib -O2 -c -o bin/kernel/$ext.o -x c kernel/include/c/$ext.c
 done
 echo "creating kernel flat binary"
-ld -m elf_i386 -Ttext=0x4000 -e real_start --oformat binary -o bin/kernel/kernel.bin bin/kernel/kernel.o bin/kernel/putchar.o bin/kernel/puts.o bin/kernel/puthex.o bin/kernel/hlmm.o bin/kernel/dmem.o bin/kernel/rand.o bin/kernel/view_render.o
+ld -m elf_i386 -Ttext=0x4000 -e real_start --oformat binary -o bin/kernel/kernel.bin bin/kernel/kernel.o bin/kernel/putchar.o bin/kernel/puts.o bin/kernel/puthex.o bin/kernel/hlmm.o bin/kernel/dmem.o bin/kernel/rand.o bin/kernel/view.o
 
 echo "creating kernel symbol file (.text only)"
 nm bin/kernel/kernel.o -p | grep ' T \| t ' | awk '{ print $1" "$3 }' > bin/kernel/kernel.sym
