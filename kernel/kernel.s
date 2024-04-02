@@ -215,13 +215,6 @@ subsystem_init:
     mov dl, 0x00
     call console_msg_ok
 
-    ;mov esi, string_init_sleeping
-    ;mov dl, 0x00
-    ;call console_msg_ok
-
-    ;mov eax, 2
-    ;call time_sleep
-
     jmp kernel_hang.loop
 
     mov dl, 0x00
