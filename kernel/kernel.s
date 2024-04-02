@@ -112,7 +112,7 @@ subsystem_init:
     mov ax, 0b00000011
     mov esi, paging_kernel_table
     mov edi, 0
-    call paging_write_initial_directory_entry
+    call paging_write_directory_entry
 
     ; identity-map the first 1 MiB
     ; create 256 entries in the kernel page table
@@ -122,7 +122,7 @@ subsystem_init:
     mov esi, paging_kernel_table
     mov edi, 0
 .identity_page_loop:
-    call paging_write_initial_table_entry
+    call paging_write_table_entry
     add ebx, 4096
     inc edi
     loop .identity_page_loop
@@ -135,7 +135,7 @@ subsystem_init:
     mov esi, paging_kernel_table
     mov edi, 256
 .vesa_page_loop:
-    call paging_write_initial_table_entry
+    call paging_write_table_entry
     add ebx, 4096
     inc edi
     loop .vesa_page_loop
@@ -216,25 +216,6 @@ subsystem_init:
     call console_msg_ok
 
     jmp kernel_hang.loop
-
-    mov dl, 0x00
-    call console_clear
-
-    ; fennec image
-    mov ax, 192
-    mov bx, 112
-    mov cx, 256
-    mov dx, 256
-    mov esi, image_fennec
-    call gfx_draw_bitmap
-
-    ; fennec text
-    mov bx, 192
-    mov cx, 368
-    mov dh, 0x0F
-    mov dl, 0x00
-    mov esi, string_info_2
-    call gfx_draw_string
 
     ;mov esi, key_down_callback
     ;call kbd_attach_key_down_callback
@@ -320,18 +301,6 @@ section .text
     %include "str.s"
     ; text strings
     %include "strings.s"
-
-section .data
-image_ry:
-    ;incbin "images/ry.raw"
-    ;incbin "images/ry_clarimount.raw"
-image_fennec:
-    incbin "images/fennec_boot.raw"
-    ;incbin "images/fennec1.raw"
-    ;incbin "images/fennec2.raw"
-    ;incbin "images/fennec3.raw"
-    ;incbin "images/lua_sunset.raw"
-    ;incbin "images/test.raw"
 
 section .bss
 kernel_hlmm_ctx_ptr: resd 1

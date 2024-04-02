@@ -124,11 +124,10 @@ vmm_unmap_virtual:
     ; write an empty entry to the page table
     ; TODO: this will need to be changed if the kernel ever stops
     ;       living in an identity-mapped location
-    ;       (specifically paging_write_*initial*_table_entry)
     mov ax, 0b00000000
     mov ebx, 0x00000000
     mov esi, paging_kernel_table
-    call paging_write_initial_table_entry
+    call paging_write_table_entry
 
     inc edi                  ; increment page table index
     add edx, 4096            ; point to next page
@@ -231,12 +230,11 @@ vmm_map_physical_to_virtual:
     ; write the entry
     ; TODO: this will need to be changed if the kernel ever stops
     ;       living in an identity-mapped location
-    ;       (specifically paging_write_*initial*_table_entry)
     mov edi, ecx
     mov ax, 0b00000011       ; read/write, present
     mov ebx, esi
     mov esi, paging_kernel_table
-    call paging_write_initial_table_entry
+    call paging_write_table_entry
 
     pop edi
     pop esi

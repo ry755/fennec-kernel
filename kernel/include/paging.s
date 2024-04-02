@@ -29,15 +29,14 @@ paging_set_directory:
     mov cr3, esi
     ret
 
-; write an entry to the current page directory *WHILE PAGING IS DISABLED*
-; have fun crashing the kernel if you try to use this while paging is enabled
+; write an entry to the current page directory
 ; inputs:
 ; AX: attribute bitmap
 ; ESI: pointer to page table (physical address, must be aligned to 4KB!)
 ; EDI: page directory index (e.g. 0 is the first entry, 1 is the second entry)
 ; outputs:
 ; none
-paging_write_initial_directory_entry:
+paging_write_directory_entry:
     pushad
 
     ; calculate the address of the specified page directory entry
@@ -55,22 +54,21 @@ paging_write_initial_directory_entry:
     popad
     ret
 
-; write an entry to a page table *WHILE PAGING IS DISABLED*
-; have fun crashing the kernel if you try to use this while paging is enabled
+; write an entry to a page table
 ; inputs:
 ; AX: attribute bitmap
 ; EBX: address to map (physical address, must be aligned to 4KB!)
-; ESI: pointer to page table (physical address, must be aligned to 4KB!)
+; ESI: pointer to page table (virtual address if paging is enabled)
 ; EDI: page table index (e.g. 0 is the first entry, 1 is the second entry)
 ; outputs:
 ; none
-paging_write_initial_table_entry:
+paging_write_table_entry:
     pushad
 
     ; calculate the address of the specified page table entry
     mov ecx, 4
     imul edi, ecx
-    add edi, esi             ; EDI: physical address of the specified entry
+    add edi, esi             ; EDI: address of the specified entry
 
     ; create an entry by ORing the low word of the address to map with the attribute bitmap
     or bx, ax
