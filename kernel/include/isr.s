@@ -247,6 +247,14 @@ isr14:
     call console_print_hex_dword
     mov esi, string_crlf
     call console_print_string
+    mov esi, string_virtual_address
+    call console_msg_error
+    mov eax, cr2
+    mov dh, 0x0F
+    mov dl, 0x00
+    call console_print_hex_dword
+    mov esi, string_crlf
+    call console_print_string
     jmp kernel_hang
     iret
 isr15:
@@ -492,6 +500,21 @@ isr32:                       ; system timer interrupt
     mov eax, dword [system_timer]
     inc eax
     mov dword [system_timer], eax
+
+    ; update views
+    mov ax, word [mouse_x]
+    mov bx, word [mouse_y]
+    mov word [view_mouse_struct + view.x], ax
+    mov word [view_mouse_struct + view.y], bx
+
+    mov esi, view_wallpaper_struct
+    mov edi, view_main_framebuffer
+    call view_wrapper_render
+
+    mov ecx, 0x0004B000
+    mov esi, [view_main_framebuffer + view_framebuffer.pointer]
+    mov edi, 0x00100000
+    rep movsb
 
     mov al, 32
     call pic_eoi

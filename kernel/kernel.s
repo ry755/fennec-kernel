@@ -159,16 +159,6 @@ subsystem_init:
     mov dl, 0x00
     call console_msg_boot
 
-    ; load IDT and enable interrupts
-    lidt [idt_desc]
-    mov esi, string_init_idt
-    mov dl, 0x00
-    call console_msg_boot
-    sti
-    mov esi, string_init_int
-    mov dl, 0x00
-    call console_msg_boot
-
     ; enable PS/2 mouse
     call mouse_init
     mov esi, string_init_mouse
@@ -196,17 +186,36 @@ subsystem_init:
     mov dl, 0x00
     call console_print_string
 
+    ; allocate memory for the main view framebffer
+    mov eax, 0x0004B000
+    call view_init
+
+    ; allocate memory for the wallpaper view framebuffer
+    mov esi, view_wallpaper_struct
+    mov edi, view_wallpaper_framebuffer_struct
+    call view_create
+    mov ecx, 0x0004B000
+.wallpaper_fill_loop:
+    mov [edi], byte 0x14
+    inc edi
+    loop .wallpaper_fill_loop
+
+    ; load IDT and enable interrupts
+    lidt [idt_desc]
+    mov esi, string_init_idt
+    mov dl, 0x00
+    call console_msg_boot
+    sti
+    mov esi, string_init_int
+    mov dl, 0x00
+    call console_msg_boot
+
     ; init done, welcome!
     mov esi, string_init_welcome
     mov dl, 0x00
     call console_msg_ok
 
-    mov esi, string_init_sleeping
-    mov dl, 0x00
-    call console_msg_ok
-
-    mov eax, 2
-    call time_sleep
+    jmp kernel_hang.loop
 
     mov dl, 0x00
     call console_clear
@@ -294,7 +303,7 @@ section .text
     ; console subroutines
     %include "console.s"
     ; window management subroutines
-    %include "window.s"
+    ;%include "window.s"
     ; math subroutines
     %include "math.s"
     ; keyboard subroutines
@@ -315,6 +324,7 @@ section .text
 section .data
 image_ry:
     ;incbin "images/ry.raw"
+    ;incbin "images/ry_clarimount.raw"
 image_fennec:
     incbin "images/fennec_boot.raw"
     ;incbin "images/fennec1.raw"

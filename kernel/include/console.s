@@ -4,6 +4,101 @@ section .text
 
     [bits 32]
 
+; trampoline routine for C code
+global console_cdecl_print_string
+console_cdecl_print_string:
+    push ebp
+    mov ebp, esp
+
+    push esi
+    push edx
+
+    mov esi, dword [ebp+8]
+    mov dl, 0x00
+    mov dh, 0x0F
+    call console_print_string
+
+    pop edx
+    pop esi
+    pop ebp
+    ret
+
+; trampoline routine for C code
+global console_cdecl_print_char
+console_cdecl_print_char:
+    push ebp
+    mov ebp, esp
+
+    push eax
+    push edx
+
+    mov eax, dword [ebp+8]
+    mov dl, 0x00
+    mov dh, 0x0F
+    call console_print_char
+
+    pop edx
+    pop eax
+    pop ebp
+    ret
+
+; trampoline routine for C code
+global console_cdecl_print_hex_dword
+console_cdecl_print_hex_dword:
+    push ebp
+    mov ebp, esp
+
+    push eax
+    push edx
+
+    mov eax, dword [ebp+8]
+    mov dl, 0x00
+    mov dh, 0x0F
+    call console_print_hex_dword
+
+    pop edx
+    pop eax
+    pop ebp
+    ret
+
+; trampoline routine for C code
+global console_cdecl_print_hex_word
+console_cdecl_print_hex_word:
+    push ebp
+    mov ebp, esp
+
+    push eax
+    push edx
+
+    mov eax, dword [ebp+8]
+    mov dl, 0x00
+    mov dh, 0x0F
+    call console_print_hex_word
+
+    pop edx
+    pop eax
+    pop ebp
+    ret
+
+; trampoline routine for C code
+global console_cdecl_print_hex_byte
+console_cdecl_print_hex_byte:
+    push ebp
+    mov ebp, esp
+
+    push eax
+    push edx
+
+    mov eax, dword [ebp+8]
+    mov dl, 0x00
+    mov dh, 0x0F
+    call console_print_hex_byte
+
+    pop edx
+    pop eax
+    pop ebp
+    ret
+
 ; initialize the text console
 ; inputs:
 ; none
@@ -346,9 +441,6 @@ console_scroll:
 
     movzx cx, byte [gfx_font.y_size]
 .scroll_loop:
-    push ds
-    push es
-
     mov dx, cx
     mov edi, dword [vesa_screen.framebuffer]
     movzx esi, word [vesa_screen.bytes_per_line] ; start copying from second line
@@ -361,9 +453,6 @@ console_scroll:
     cld
     rep movsb                ; copy display contents
 
-    pop es
-    pop ds
-
     mov cx, dx
     loop .scroll_loop
 
@@ -372,12 +461,11 @@ console_scroll:
     ; clear the last line
     movzx si, dl
     mov ax, 0
-.set_y:
     mov bx, word [vesa_screen.height]
     movzx cx, byte [gfx_font.y_size]
     sub bx, cx
     mov cx, word [vesa_screen.width]
-    mov dx, word [gfx_font.y_size]
+    movzx dx, byte [gfx_font.y_size]
     call gfx_fill_rect
 
     mov byte [console.x], 0
